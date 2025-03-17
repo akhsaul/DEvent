@@ -58,4 +58,7 @@
     <string name="txt_email">ikhsanmaulana384@gmail.com</string>
     <string name="desc_share">Share Event</string>
     <string name="title_about">About</string>
+    <string name="title_item_list">List Item</string>
+    <string name="title_item_grid">Grid Item</string>
+    <string name="title_display">Display</string>
 </resources>

@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.akhsaul.dicodingevent.data.Event
+import org.akhsaul.dicodingevent.data.EventType
 import org.akhsaul.dicodingevent.repository.EventRepository
-import org.akhsaul.dicodingevent.repository.SearchType
 import org.akhsaul.dicodingevent.util.Result
 import org.akhsaul.dicodingevent.util.SettingPreferences
 import javax.inject.Inject
@@ -32,7 +32,7 @@ class UpcomingEventViewModel @Inject constructor(
     }
 
     fun searchEvent(title: String) {
-        eventRepository.searchEvent(viewModelScope, title, SearchType.ACTIVE)
+        eventRepository.searchEvent(viewModelScope, title, EventType.ACTIVE)
     }
 
     fun getSearchEvent(): LiveData<Result<List<Event>>> {

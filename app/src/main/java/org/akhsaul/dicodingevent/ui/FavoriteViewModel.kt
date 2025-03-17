@@ -12,6 +12,7 @@ class FavoriteViewModel @Inject constructor(
     private val settingPreferences: SettingPreferences
 ) : ViewModel() {
     var hasShownToast = false
+    var isGrid = false
     fun fetchFavoriteEvents() = eventRepository.fetchFavoriteEvents()
     fun getFavoriteEvents() = eventRepository.getFavoriteEvents()
     fun isInitialized() = settingPreferences.isInitialized()

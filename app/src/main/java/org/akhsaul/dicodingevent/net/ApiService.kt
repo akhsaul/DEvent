@@ -1,24 +1,22 @@
 package org.akhsaul.dicodingevent.net
 
 import org.akhsaul.dicodingevent.data.EventResponse
+import org.akhsaul.dicodingevent.data.EventType
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface ApiService {
-    @GET("events?active=1")
-    suspend fun getUpcomingEvent(
-        @Query("limit") limit: Int
-    ): Response<EventResponse>
 
-    @GET("events?active=0")
-    suspend fun getFinishedEvent(
+    @GET("events")
+    suspend fun getEvents(
+        @Query("active") active: Int = EventType.ALL.value,
         @Query("limit") limit: Int
     ): Response<EventResponse>
 
     @GET("events")
     suspend fun getSearchEvent(
-        @Query("active") active: Int = -1,
+        @Query("active") active: Int = EventType.ALL.value,
         @Query("q") keyword: String
     ): Response<EventResponse>
 

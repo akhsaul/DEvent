@@ -8,7 +8,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.CarouselSnapHelper
+import com.google.android.material.carousel.MultiBrowseCarouselStrategy
 import dagger.hilt.android.AndroidEntryPoint
 import org.akhsaul.dicodingevent.R
 import org.akhsaul.dicodingevent.adapter.CarouselAdapter
@@ -33,18 +35,12 @@ class HomeFragment : Fragment(), OnItemClickListener {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        setupTopMenu(
-            R.id.action_navigation_home_to_settingsFragment,
-            R.id.action_navigation_home_to_aboutFragment
-        )
-        return binding.root
-    }
+        val root: View = binding.root
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+        val carouselAdapter = CarouselAdapter(this)
         val snapHelper = CarouselSnapHelper()
         snapHelper.attachToRecyclerView(binding.rvUpcomingEvent)
-        val carouselAdapter = CarouselAdapter(this)
+        binding.rvUpcomingEvent.setLayoutManager(CarouselLayoutManager(MultiBrowseCarouselStrategy()))
         binding.rvUpcomingEvent.adapter = carouselAdapter
 
         val listAdapter = ListEventAdapter(this)
@@ -132,6 +128,12 @@ class HomeFragment : Fragment(), OnItemClickListener {
                 }
             }
         }
+
+        setupTopMenu(
+            R.id.action_navigation_home_to_settingsFragment,
+            R.id.action_navigation_home_to_aboutFragment
+        )
+        return root
     }
 
     private fun loadAll() {

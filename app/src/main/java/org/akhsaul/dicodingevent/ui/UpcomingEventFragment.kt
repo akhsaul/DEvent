@@ -32,15 +32,8 @@ class UpcomingEventFragment : Fragment(), OnItemClickListener {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentUpcomingEventBinding.inflate(inflater, container, false)
-        setupTopMenu(
-            R.id.action_navigation_upcoming_event_to_settingsFragment,
-            R.id.action_navigation_upcoming_event_to_aboutFragment
-        )
-        return binding.root
-    }
+        val root: View = binding.root
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
         val adapter = ListEventAdapter(this)
         binding.rvUpcomingEvent.adapter = adapter
 
@@ -68,6 +61,7 @@ class UpcomingEventFragment : Fragment(), OnItemClickListener {
                 return false
             }
         })
+
         upcomingEventViewModel.getSearchEvent().observe(viewLifecycleOwner) { result ->
             if (!upcomingEventViewModel.isFilterOpened()) return@observe
 
@@ -141,6 +135,12 @@ class UpcomingEventFragment : Fragment(), OnItemClickListener {
                 }
             }
         }
+
+        setupTopMenu(
+            R.id.action_navigation_upcoming_event_to_settingsFragment,
+            R.id.action_navigation_upcoming_event_to_aboutFragment
+        )
+        return root
     }
 
     private fun FragmentUpcomingEventBinding.textNoData(show: Boolean, message: String? = null) {

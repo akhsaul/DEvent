@@ -4,9 +4,11 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
+import android.util.DisplayMetrics
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.IdRes
 import androidx.annotation.RequiresApi
@@ -16,14 +18,20 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.ListAdapter
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.akhsaul.dicodingevent.adapter.DisplayEventAdapter
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.floor
 import kotlin.time.Duration.Companion.seconds
 
 fun String.toLocalDateTime(): LocalDateTime {
@@ -103,7 +111,11 @@ fun Context.remainingTime(time: ZonedDateTime): String {
     }
 }
 
-fun Fragment.setupTopMenu(@IdRes navigationToSettings: Int, @IdRes navigationToAbout: Int) {
+fun Fragment.setupTopMenu(
+    @IdRes navigationToSettings: Int,
+    @IdRes navigationToAbout: Int,
+    toggleDisplay: (isGrid: Boolean) -> Unit = {}
+) {
     requireActivity().addMenuProvider(object : MenuProvider {
         override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
             menuInflater.inflate(R.menu.top_menu, menu)
@@ -121,10 +133,35 @@ fun Fragment.setupTopMenu(@IdRes navigationToSettings: Int, @IdRes navigationToA
                     true
                 }
 
+                R.id.displayList -> {
+                    toggleDisplay(false)
+                    true
+                }
+
+                R.id.displayGrid -> {
+                    toggleDisplay(true)
+                    true
+                }
+
                 else -> false
             }
         }
     }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+}
+
+fun RecyclerView.toggleDisplay(isGrid: Boolean, adapter: DisplayEventAdapter, context: Context) {
+    val viewType = if (isGrid) {
+        layoutManager =
+            StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL)
+        layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
+        DisplayEventAdapter.ViewType.GRID
+    } else {
+        layoutManager = LinearLayoutManager(context)
+        layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT
+        DisplayEventAdapter.ViewType.LIST
+    }
+    adapter.setViewType(viewType)
+    this.adapter = adapter
 }
 
 fun isSystemInDarkMode(resources: Resources): Boolean {
@@ -142,4 +179,22 @@ fun setAppDarkMode(isDark: Boolean) {
         AppCompatDelegate.MODE_NIGHT_NO
     }
     AppCompatDelegate.setDefaultNightMode(compatDelegate)
+}
+
+fun roundNumber(number: Double): Int {
+    val decimalPart = number - floor(number)
+    return if (decimalPart >= 0.6) {
+        floor(number) + 1
+    } else {
+        floor(number)
+    }.toInt()
+}
+
+fun Context?.pxToDp(px: Int): Int {
+    if (px == 0 || this == null) return 0
+    return px / (resources.displayMetrics.densityDpi / DisplayMetrics.DENSITY_DEFAULT)
+}
+
+fun ListAdapter<*, *>.clear() {
+    this.submitList(emptyList())
 }

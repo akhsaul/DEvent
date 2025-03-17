@@ -2,11 +2,13 @@ package org.akhsaul.dicodingevent.repository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MediatorLiveData
+import androidx.lifecycle.MutableLiveData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.akhsaul.dicodingevent.data.Event
 import org.akhsaul.dicodingevent.data.EventDao
+import org.akhsaul.dicodingevent.data.EventType
 import org.akhsaul.dicodingevent.net.ApiService
 import org.akhsaul.dicodingevent.util.Result
 import javax.inject.Inject
@@ -15,9 +17,9 @@ class EventRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
     private val eventDao: EventDao
 ) : EventRepository {
-    private val resultUpcomingEvents = MediatorLiveData<Result<List<Event>>>()
-    private val resultFinishedEvents = MediatorLiveData<Result<List<Event>>>()
-    private val resultSearchEvent = MediatorLiveData<Result<List<Event>>>()
+    private val resultUpcomingEvents = MutableLiveData<Result<List<Event>>>()
+    private val resultFinishedEvents = MutableLiveData<Result<List<Event>>>()
+    private val resultSearchEvent = MutableLiveData<Result<List<Event>>>()
     private val resultFavoriteEvents = MediatorLiveData<Result<List<Event>>>()
 
     override fun fetchUpcomingEvents(
@@ -27,7 +29,7 @@ class EventRepositoryImpl @Inject constructor(
         resultUpcomingEvents.value = Result.Loading
         scope.launch(Dispatchers.IO) {
             try {
-                val apiResult = apiService.getUpcomingEvent(limit)
+                val apiResult = apiService.getEvents(EventType.ACTIVE.value, limit)
 
                 if (apiResult.isSuccessful) {
                     val events = apiResult.body()?.listEvents ?: emptyList()
@@ -52,7 +54,7 @@ class EventRepositoryImpl @Inject constructor(
         resultFinishedEvents.value = Result.Loading
         scope.launch(Dispatchers.IO) {
             try {
-                val apiResult = apiService.getFinishedEvent(limit)
+                val apiResult = apiService.getEvents(EventType.INACTIVE.value, limit)
                 if (apiResult.isSuccessful) {
                     val events = apiResult.body()?.listEvents ?: emptyList()
                     scope.launch {
@@ -63,7 +65,7 @@ class EventRepositoryImpl @Inject constructor(
                         resultFinishedEvents.value = Result.Error
                     }
                 }
-            } catch (_: Throwable) {
+            } catch (t: Throwable) {
                 scope.launch {
                     resultFinishedEvents.value = Result.Error
                 }
@@ -93,7 +95,7 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun searchEvent(scope: CoroutineScope, title: String, type: SearchType) {
+    override fun searchEvent(scope: CoroutineScope, title: String, type: EventType) {
         resultSearchEvent.value = Result.Loading
         scope.launch(Dispatchers.IO) {
             val finalTitle = title.trim()
@@ -135,9 +137,4 @@ class EventRepositoryImpl @Inject constructor(
     override fun getFavoriteEvents(): LiveData<Result<List<Event>>> {
         return resultFavoriteEvents
     }
-}
-
-enum class SearchType(val value: Int) {
-    ACTIVE(1),
-    INACTIVE(0),
 }

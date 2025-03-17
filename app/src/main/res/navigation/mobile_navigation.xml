@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@+id/navigation_home">
+    app:startDestination="@+id/navigation_finished_event">
 
     <fragment
         android:id="@+id/navigation_home"
@@ -40,7 +40,7 @@
     <fragment
         android:id="@+id/navigation_finished_event"
         android:name="org.akhsaul.dicodingevent.ui.FinishedEventFragment"
-        android:label="@string/title_finished_event"
+        android:label="@string/title_home"
         tools:layout="@layout/fragment_finished_event">
         <action
             android:id="@+id/action_navigation_finished_event_to_detailFragment"
