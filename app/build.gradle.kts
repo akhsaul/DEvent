@@ -47,6 +47,7 @@ android {
 }
 
 dependencies {
+    debugImplementation(libs.leakcanary.android)
     implementation(libs.androidx.startup.runtime)
 
     ksp(libs.hilt.android.compiler)
