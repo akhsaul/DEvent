@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.launch
 import org.akhsaul.dicodingevent.data.Event
 import org.akhsaul.dicodingevent.repository.EventRepository
 import javax.inject.Inject
@@ -16,25 +16,24 @@ class DetailViewModel @Inject constructor(
 ) : ViewModel() {
     private var _isFavorite = MutableLiveData(false)
     val isFavorite: LiveData<Boolean> = _isFavorite
-    private lateinit var _event: Event
+    private var _event: Event? = null
+    val event get() = requireNotNull(_event)
 
     fun setCurrentEvent(event: Event) {
         _event = event
-    }
 
-    fun isFavoriteEvent(): Boolean {
-        return runBlocking {
-            val result = eventRepository.isFavoriteEvent(_event)
+        viewModelScope.launch {
+            val result = eventRepository.isFavoriteEvent(event)
             _isFavorite.value = result
-            requireNotNull(_isFavorite.value)
         }
     }
 
     fun toggleFavorite() {
         _isFavorite.value = _isFavorite.value?.not()
-    }
-
-    fun saveToDatabase(isFavorite: Boolean) {
-        eventRepository.setFavoriteEvent(viewModelScope, _event, isFavorite)
+        eventRepository.setFavoriteEvent(
+            viewModelScope,
+            event,
+            requireNotNull(_isFavorite.value)
+        )
     }
 }

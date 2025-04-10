@@ -48,6 +48,8 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getUpcomingEvents(): LiveData<Result<List<Event>>> = resultUpcomingEvents
+
     override fun fetchFinishedEvents(scope: CoroutineScope, limit: Int) {
         resultFinishedEvents.value = Result.Loading
         scope.launch(Dispatchers.IO) {
@@ -71,17 +73,10 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getUpcomingEvents(): LiveData<Result<List<Event>>> {
-        return resultUpcomingEvents
-    }
+    override fun getFinishedEvents(): LiveData<Result<List<Event>>> = resultFinishedEvents
 
-    override fun getFinishedEvents(): LiveData<Result<List<Event>>> {
-        return resultFinishedEvents
-    }
-
-    override suspend fun isFavoriteEvent(event: Event): Boolean {
-        return eventDao.findFavoriteEvent(event.id) != null
-    }
+    override suspend fun isFavoriteEvent(event: Event) =
+        eventDao.findFavoriteEvent(event.id) != null
 
     override fun setFavoriteEvent(scope: CoroutineScope, event: Event, isFavorite: Boolean) {
         scope.launch(Dispatchers.IO) {
@@ -117,9 +112,7 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getSearchedEvents(): LiveData<Result<List<Event>>> {
-        return resultSearchEvent
-    }
+    override fun getSearchedEvents(): LiveData<Result<List<Event>>> = resultSearchEvent
 
     override fun fetchFavoriteEvents() {
         resultFavoriteEvents.value = Result.Loading
@@ -132,9 +125,7 @@ class EventRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getFavoriteEvents(): LiveData<Result<List<Event>>> {
-        return resultFavoriteEvents
-    }
+    override fun getFavoriteEvents(): LiveData<Result<List<Event>>> = resultFavoriteEvents
 }
 
 enum class SearchType(val value: Int) {

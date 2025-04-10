@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.os.Build
+import android.util.DisplayMetrics
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -16,6 +17,8 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -24,6 +27,7 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.math.floor
 import kotlin.time.Duration.Companion.seconds
 
 fun String.toLocalDateTime(): LocalDateTime {
@@ -64,6 +68,7 @@ fun Toast.callBack(onShow: () -> Unit, onHidden: () -> Unit) {
 
         override fun onToastHidden() {
             onHidden()
+            removeCallback(this)
         }
     })
     show()
@@ -142,4 +147,33 @@ fun setAppDarkMode(isDark: Boolean) {
         AppCompatDelegate.MODE_NIGHT_NO
     }
     AppCompatDelegate.setDefaultNightMode(compatDelegate)
+}
+
+fun roundNumber(number: Double): Int {
+    val decimalPart = number - floor(number)
+    return if (decimalPart >= 0.6) {
+        floor(number) + 1
+    } else {
+        floor(number)
+    }.toInt()
+}
+
+fun DisplayMetrics?.pxToDp(px: Int): Int {
+    if (px == 0 || this == null) return 0
+    return px / (densityDpi / DisplayMetrics.DENSITY_DEFAULT)
+}
+
+fun RecyclerView.LayoutManager?.adjustStaggeredGridSpanCount(
+    widthParent: Int,
+    heightParent: Int,
+    widthContent: Double,
+    displayMetrics: DisplayMetrics?,
+) {
+    val widthDp = displayMetrics.pxToDp(widthParent)
+    val heightDp = displayMetrics.pxToDp(heightParent)
+    if (widthDp != 0 && heightDp != 0) {
+        if (this is StaggeredGridLayoutManager) {
+            this.spanCount = roundNumber(widthDp.toDouble().div(widthContent))
+        }
+    }
 }

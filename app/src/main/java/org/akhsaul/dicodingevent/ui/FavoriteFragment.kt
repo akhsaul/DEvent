@@ -22,58 +22,70 @@ import org.akhsaul.dicodingevent.util.Result
 class FavoriteFragment : Fragment(), OnItemClickListener {
     private val favoriteViewModel: FavoriteViewModel by viewModels()
     private var _binding: FragmentFavoriteBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = requireNotNull(_binding)
+    private lateinit var adapter: ListEventAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentFavoriteBinding.inflate(inflater, container, false)
-        setupTopMenu(
-            R.id.action_navigation_favorite_to_settingsFragment,
-            R.id.action_navigation_favorite_to_aboutFragment
-        )
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = ListEventAdapter(this)
-        binding.rvFavoriteEvent.adapter = adapter
+        setupTopMenu(
+            R.id.action_navigation_favorite_to_settingsFragment,
+            R.id.action_navigation_favorite_to_aboutFragment
+        )
+        adapter = ListEventAdapter(this)
+        binding.apply {
+            rvFavoriteEvent.adapter = adapter
 
-        binding.refreshLayout.setOnRefreshListener {
-            loadAll()
-            binding.refreshLayout.isRefreshing = false
+            refreshLayout.setOnRefreshListener {
+                loadData()
+            }
+            setupObserver()
         }
+        loadData()
+    }
 
-        favoriteViewModel.getFavoriteEvents().observe(viewLifecycleOwner) { result ->
-            with(binding) {
+    private fun FragmentFavoriteBinding.setupObserver(){
+        favoriteViewModel.apply {
+            getFavoriteEventList().observe(viewLifecycleOwner) {
+                adapter.submitList(it)
+            }
+            getFavoriteEventState().observe(viewLifecycleOwner) { result ->
                 when (result) {
                     is Result.Loading -> {
                         progressBar.visibility = View.VISIBLE
                     }
 
                     is Result.Success -> {
+                        refreshLayout.isRefreshing = false
                         progressBar.visibility = View.GONE
                         if (result.data.isEmpty()) {
-                            textNoData(true, getString(R.string.txt_no_data))
+                            showNoDataText(true, getString(R.string.txt_no_data))
                         } else {
-                            textNoData(false)
+                            showNoDataText(false)
+                            setFavoriteEventList(result.data)
                             adapter.submitList(result.data)
                         }
                     }
 
                     is Result.Error -> {
+                        refreshLayout.isRefreshing = false
                         progressBar.visibility = View.GONE
-                        if (favoriteViewModel.hasShownToast.not()) {
+                        if (hasShownToast.not()) {
                             context.showErrorWithToast(
                                 lifecycleScope,
-                                onShow = { favoriteViewModel.hasShownToast = true },
-                                onHidden = { favoriteViewModel.hasShownToast = false }
+                                onShow = { hasShownToast = true },
+                                onHidden = { hasShownToast = false }
                             )
                         }
                         if (adapter.currentList.isEmpty()) {
-                            textNoData(true, getString(R.string.txt_error_db))
+                            showNoDataText(true, getString(R.string.txt_error_db))
                         }
                     }
                 }
@@ -81,7 +93,7 @@ class FavoriteFragment : Fragment(), OnItemClickListener {
         }
     }
 
-    private fun FragmentFavoriteBinding.textNoData(show: Boolean, message: String? = null) {
+    private fun FragmentFavoriteBinding.showNoDataText(show: Boolean, message: String? = null) {
         if (show) {
             tvNoData.text = requireNotNull(message)
             rvFavoriteEvent.visibility = View.GONE
@@ -101,15 +113,10 @@ class FavoriteFragment : Fragment(), OnItemClickListener {
         )
     }
 
-    private fun loadAll() {
-        if (!favoriteViewModel.isInitialized()) return
+    private fun loadData() {
+        if (favoriteViewModel.isInitialized().not()) return
 
         favoriteViewModel.fetchFavoriteEvents()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        loadAll()
     }
 
     override fun onDestroyView() {

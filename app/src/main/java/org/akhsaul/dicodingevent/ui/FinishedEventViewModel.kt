@@ -1,13 +1,13 @@
 package org.akhsaul.dicodingevent.ui
 
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.akhsaul.dicodingevent.data.Event
 import org.akhsaul.dicodingevent.repository.EventRepository
 import org.akhsaul.dicodingevent.repository.SearchType
-import org.akhsaul.dicodingevent.util.Result
 import org.akhsaul.dicodingevent.util.SettingPreferences
 import javax.inject.Inject
 
@@ -17,37 +17,42 @@ class FinishedEventViewModel @Inject constructor(
     private val settingPreferences: SettingPreferences
 ) : ViewModel() {
     var hasShownToast = false
+    private val _currentFinishedEventList = MutableLiveData<List<Event>>()
+    private val _currentSearchEventList = MutableLiveData<List<Event>>()
     private var filterIsOpened = false
-    private var currentList = listOf<Event>()
+    private var keywordSearchEvent: String? = null
 
     fun isInitialized() = settingPreferences.isInitialized()
 
-    fun getSearchEvent(): LiveData<Result<List<Event>>> {
-        return eventRepository.getSearchedEvents()
+    fun setSearchEventList(list: List<Event>) = _currentSearchEventList.postValue(list)
+    fun getSearchEventList(): LiveData<List<Event>> = _currentSearchEventList
+    fun getSearchEventState() = eventRepository.getSearchedEvents()
+
+    fun fetchSearchEvent() {
+        val keyword = keywordSearchEvent ?: return
+        searchEvent(keyword)
     }
 
-    fun searchEvent(title: String) {
-        eventRepository.searchEvent(viewModelScope, title, SearchType.INACTIVE)
+    fun searchEvent(keyword: String) {
+        eventRepository.searchEvent(viewModelScope, keyword, SearchType.INACTIVE)
+        keywordSearchEvent = keyword
     }
 
-    fun getFinishedEvent(): LiveData<Result<List<Event>>> {
-        return eventRepository.getFinishedEvents()
-    }
+    fun setFinishedEventList(list: List<Event>) = _currentFinishedEventList.postValue(list)
+    fun getFinishedEventList(): LiveData<List<Event>> = _currentFinishedEventList
+    fun getFinishedEventState() = eventRepository.getFinishedEvents()
 
     fun fetchFinishedEvent() {
         eventRepository.fetchFinishedEvents(viewModelScope, 40)
     }
 
-    fun openFilter(currentList: List<Event>) {
-        this.currentList = currentList
+    fun openFilter() {
         filterIsOpened = true
     }
 
-    fun closeFilter(): List<Event> {
+    fun closeFilter() {
         filterIsOpened = false
-        val list = currentList
-        currentList = emptyList()
-        return list
+        keywordSearchEvent = null
     }
 
     fun isFilterOpened() = filterIsOpened

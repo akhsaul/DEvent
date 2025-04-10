@@ -30,7 +30,7 @@ import java.time.format.DateTimeFormatter
 class DetailFragment : Fragment() {
     private val detailViewModel: DetailViewModel by viewModels()
     private var _binding: FragmentDetailBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = requireNotNull(_binding)
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,65 +47,56 @@ class DetailFragment : Fragment() {
         }
         _binding = FragmentDetailBinding.inflate(inflater, container, false)
         detailViewModel.setCurrentEvent(event)
-        with(binding) {
-            ivCover.load(event.mediaCover)
-            tvCategory.text = event.category
-            tvName.text = event.name
-            tvSummary.text = event.summary
-            tvQuota.text = getString(R.string.txt_quota).format(event.quota - event.registrants)
-            tvLocation.text = getString(R.string.txt_location).format(event.cityName)
-            tvTime.text = makeSomeTextBold(event)
-            tvOwner.text = getString(R.string.txt_owner).format(event.ownerName)
-            tvDesc.text = HtmlCompat.fromHtml(
-                event.description,
-                HtmlCompat.FROM_HTML_MODE_LEGACY
-            )
-            btnLink.setOnClickListener {
-                startActivity(Intent(Intent.ACTION_VIEW, event.link.toUri()))
-            }
-            actionShare.setOnClickListener {
-                startActivity(
-                    Intent.createChooser(
-                        Intent(Intent.ACTION_SEND).apply {
-                            type = "text/plain"
-                            putExtra(Intent.EXTRA_SUBJECT, "Check out this event!")
-                            putExtra(
-                                Intent.EXTRA_TEXT,
-                                "${event.name}\n\n${event.summary}\n\n${event.link}"
-                            )
-                        },
-                        "Share via"
-                    )
-                )
-            }
-            toggleFabFavoriteIcon(detailViewModel.isFavoriteEvent())
-            detailViewModel.isFavorite.observe(viewLifecycleOwner) {
-                toggleFabFavoriteIcon(it)
-                detailViewModel.saveToDatabase(it)
-            }
-            fabFavorite.setOnClickListener {
-                detailViewModel.toggleFavorite()
-            }
-        }
-
         return binding.root
     }
 
-    private fun toggleFabFavoriteIcon(isFavorite: Boolean) {
-        if (isFavorite) {
-            binding.fabFavorite.setImageIcon(
-                Icon.createWithResource(
-                    requireContext(),
-                    R.drawable.ic_favorite_24dp
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        detailViewModel.apply {
+            binding.apply {
+                ivCover.load(event.mediaCover)
+                tvCategory.text = event.category
+                tvName.text = event.name
+                tvSummary.text = event.summary
+                tvQuota.text = getString(R.string.txt_quota).format(event.quota - event.registrants)
+                tvLocation.text = getString(R.string.txt_location).format(event.cityName)
+                tvTime.text = makeSomeTextBold(event)
+                tvOwner.text = getString(R.string.txt_owner).format(event.ownerName)
+                tvDesc.text = HtmlCompat.fromHtml(
+                    event.description,
+                    HtmlCompat.FROM_HTML_MODE_LEGACY
                 )
-            )
-        } else {
-            binding.fabFavorite.setImageIcon(
-                Icon.createWithResource(
-                    requireContext(),
-                    R.drawable.ic_no_favorite_24dp
-                )
-            )
+                btnLink.setOnClickListener {
+                    startActivity(Intent(Intent.ACTION_VIEW, event.link.toUri()))
+                }
+                actionShare.setOnClickListener {
+                    startActivity(
+                        Intent.createChooser(
+                            Intent(Intent.ACTION_SEND).apply {
+                                type = "text/plain"
+                                putExtra(Intent.EXTRA_SUBJECT, "Check out this event!")
+                                putExtra(
+                                    Intent.EXTRA_TEXT,
+                                    "${event.name}\n\n${event.summary}\n\n${event.link}"
+                                )
+                            },
+                            "Share via"
+                        )
+                    )
+                }
+
+                isFavorite.observe(viewLifecycleOwner) {
+                    val favIcon = if (it) {
+                        R.drawable.ic_favorite_24dp
+                    } else {
+                        R.drawable.ic_no_favorite_24dp
+                    }
+                    fabFavorite.setImageIcon(Icon.createWithResource(requireContext(), favIcon))
+                }
+                fabFavorite.setOnClickListener {
+                    toggleFavorite()
+                }
+            }
         }
     }
 

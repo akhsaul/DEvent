@@ -4,10 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.carousel.CarouselSnapHelper
 import dagger.hilt.android.AndroidEntryPoint
 import org.akhsaul.dicodingevent.R
@@ -25,7 +27,9 @@ import org.akhsaul.dicodingevent.util.Result
 class HomeFragment : Fragment(), OnItemClickListener {
     private val homeViewModel: HomeViewModel by viewModels()
     private var _binding: FragmentHomeBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = requireNotNull(_binding)
+    private lateinit var carouselAdapter: CarouselAdapter
+    private lateinit var listAdapter: ListEventAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,100 +37,113 @@ class HomeFragment : Fragment(), OnItemClickListener {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        setupTopMenu(
-            R.id.action_navigation_home_to_settingsFragment,
-            R.id.action_navigation_home_to_aboutFragment
-        )
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val snapHelper = CarouselSnapHelper()
-        snapHelper.attachToRecyclerView(binding.rvUpcomingEvent)
-        val carouselAdapter = CarouselAdapter(this)
-        binding.rvUpcomingEvent.adapter = carouselAdapter
+        setupTopMenu(
+            R.id.action_navigation_home_to_settingsFragment,
+            R.id.action_navigation_home_to_aboutFragment
+        )
+        carouselAdapter = CarouselAdapter(this)
+        listAdapter = ListEventAdapter(this)
+        binding.apply {
+            CarouselSnapHelper().attachToRecyclerView(rvUpcomingEvent)
+            rvUpcomingEvent.adapter = carouselAdapter
+            rvFinishedEvent.adapter = listAdapter
 
-        val listAdapter = ListEventAdapter(this)
-        binding.rvFinishedEvent.adapter = listAdapter
-
-        binding.refreshLayout.setOnRefreshListener {
-            loadAll()
-            binding.refreshLayout.isRefreshing = false
+            refreshLayout.setOnRefreshListener {
+                loadData()
+            }
+            setupObserver()
         }
+        loadData()
+    }
 
-        homeViewModel.getUpcomingEventList().observe(viewLifecycleOwner) { result ->
-            with(binding) {
+    private fun FragmentHomeBinding.setupObserver() {
+        homeViewModel.apply {
+            getUpcomingEventList().observe(viewLifecycleOwner) {
+                carouselAdapter.submitList(it)
+            }
+            getUpcomingEventState().observe(viewLifecycleOwner) { result ->
                 when (result) {
                     is Result.Loading -> {
                         pbUpcomingEvent.visibility = View.VISIBLE
                     }
 
                     is Result.Success -> {
+                        refreshLayout.isRefreshing = false
                         pbUpcomingEvent.visibility = View.GONE
-                        homeViewModel.hasShownToast = false
+                        hasShownToast = false
                         if (result.data.isEmpty()) {
-                            tvNoUpcomingEvent.text = getString(R.string.txt_no_upcoming_event)
-                            rvUpcomingEvent.visibility = View.INVISIBLE
-                            tvNoUpcomingEvent.visibility = View.VISIBLE
+                            showNoDataText(
+                                tvNoUpcomingEvent,
+                                getString(R.string.txt_no_upcoming_event),
+                                rvUpcomingEvent
+                            )
                         } else {
-                            tvNoUpcomingEvent.visibility = View.GONE
-                            rvUpcomingEvent.visibility = View.VISIBLE
+                            hideNoDataText(tvNoUpcomingEvent, rvUpcomingEvent)
+                            setUpcomingEventList(result.data)
                             carouselAdapter.submitList(result.data)
                         }
                     }
 
                     is Result.Error -> {
+                        refreshLayout.isRefreshing = false
                         pbUpcomingEvent.visibility = View.GONE
-                        if (homeViewModel.hasShownToast.not()) {
+                        if (hasShownToast.not()) {
                             context.showErrorWithToast(
                                 lifecycleScope,
-                                onShow = { homeViewModel.hasShownToast = true },
-                                onHidden = { homeViewModel.hasShownToast = false }
+                                onShow = { hasShownToast = true },
+                                onHidden = { hasShownToast = false }
                             )
                         }
                         if (carouselAdapter.currentList.isEmpty()) {
-                            tvNoUpcomingEvent.text = getString(R.string.txt_no_internet)
-                            tvNoUpcomingEvent.visibility = View.VISIBLE
+                            showNoDataText(tvNoUpcomingEvent, getString(R.string.txt_no_internet))
                         }
                     }
                 }
             }
-        }
 
-        homeViewModel.getFinishedEventList().observe(viewLifecycleOwner) { result ->
-            with(binding) {
+            getFinishedEventList().observe(viewLifecycleOwner) {
+                listAdapter.submitList(it)
+            }
+            getFinishedEventState().observe(viewLifecycleOwner) { result ->
                 when (result) {
                     is Result.Loading -> {
                         pbFinishedEvent.visibility = View.VISIBLE
                     }
 
                     is Result.Success -> {
+                        refreshLayout.isRefreshing = false
                         pbFinishedEvent.visibility = View.GONE
-                        homeViewModel.hasShownToast = false
+                        hasShownToast = false
                         if (result.data.isEmpty()) {
-                            tvNoFinishedEvent.text = getString(R.string.txt_no_finished_event)
-                            rvFinishedEvent.visibility = View.INVISIBLE
-                            tvNoFinishedEvent.visibility = View.VISIBLE
+                            showNoDataText(
+                                tvNoFinishedEvent,
+                                getString(R.string.txt_no_finished_event),
+                                rvFinishedEvent
+                            )
                         } else {
-                            tvNoFinishedEvent.visibility = View.GONE
-                            rvFinishedEvent.visibility = View.VISIBLE
+                            hideNoDataText(tvNoFinishedEvent, rvFinishedEvent)
+                            setFinishedEventList(result.data)
                             listAdapter.submitList(result.data)
                         }
                     }
 
                     is Result.Error -> {
+                        refreshLayout.isRefreshing = false
                         pbFinishedEvent.visibility = View.GONE
-                        if (homeViewModel.hasShownToast.not()) {
+                        if (hasShownToast.not()) {
                             context.showErrorWithToast(
                                 lifecycleScope,
-                                onShow = { homeViewModel.hasShownToast = true },
-                                onHidden = { homeViewModel.hasShownToast = false }
+                                onShow = { hasShownToast = true },
+                                onHidden = { hasShownToast = false }
                             )
                         }
                         if (listAdapter.currentList.isEmpty()) {
-                            tvNoFinishedEvent.text = getString(R.string.txt_no_internet)
-                            tvNoFinishedEvent.visibility = View.VISIBLE
+                            showNoDataText(tvNoFinishedEvent, getString(R.string.txt_no_internet))
                         }
                     }
                 }
@@ -134,21 +151,33 @@ class HomeFragment : Fragment(), OnItemClickListener {
         }
     }
 
-    private fun loadAll() {
-        if (!homeViewModel.isInitialized()) return
+    private fun showNoDataText(
+        noDataView: TextView,
+        message: String,
+        recyclerView: RecyclerView? = null
+    ) {
+        noDataView.text = message
+        recyclerView?.visibility = View.INVISIBLE
+        noDataView.visibility = View.VISIBLE
+    }
 
-        homeViewModel.fetchUpcomingEventList()
-        homeViewModel.fetchFinishedEventList()
+    private fun hideNoDataText(noDataView: TextView, recyclerView: RecyclerView) {
+        noDataView.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
+    }
+
+    private fun loadData() {
+        homeViewModel.apply {
+            if (isInitialized().not()) return
+
+            fetchUpcomingEventList()
+            fetchFinishedEventList()
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    override fun onStart() {
-        super.onStart()
-        loadAll()
     }
 
     override fun onItemClick(event: Event) {

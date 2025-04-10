@@ -24,7 +24,8 @@ import org.akhsaul.dicodingevent.util.Result
 class UpcomingEventFragment : Fragment(), OnItemClickListener {
     private val upcomingEventViewModel: UpcomingEventViewModel by viewModels()
     private var _binding: FragmentUpcomingEventBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = requireNotNull(_binding)
+    private lateinit var adapter: ListEventAdapter
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,118 +33,131 @@ class UpcomingEventFragment : Fragment(), OnItemClickListener {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentUpcomingEventBinding.inflate(inflater, container, false)
-        setupTopMenu(
-            R.id.action_navigation_upcoming_event_to_settingsFragment,
-            R.id.action_navigation_upcoming_event_to_aboutFragment
-        )
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val adapter = ListEventAdapter(this)
-        binding.rvUpcomingEvent.adapter = adapter
+        setupTopMenu(
+            R.id.action_navigation_upcoming_event_to_settingsFragment,
+            R.id.action_navigation_upcoming_event_to_aboutFragment
+        )
+        adapter = ListEventAdapter(this)
+        binding.apply {
+            rvUpcomingEvent.adapter = adapter
 
-        binding.refreshLayout.setOnRefreshListener {
-            loadData()
-            binding.refreshLayout.isRefreshing = false
-        }
-
-        binding.searchView.setOnSearchClickListener {
-            upcomingEventViewModel.openFilter(adapter.currentList)
-        }
-        binding.searchView.setOnCloseListener {
-            val originalList = upcomingEventViewModel.closeFilter()
-            adapter.submitList(originalList)
-            binding.textNoData(false)
-            false
-        }
-        binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                upcomingEventViewModel.searchEvent(query)
-                return true
+            refreshLayout.setOnRefreshListener {
+                loadData()
             }
+        }
+        setupSearch()
+        setupObserver()
+        loadData()
+    }
 
-            override fun onQueryTextChange(newText: String): Boolean {
-                return false
-            }
-        })
-        upcomingEventViewModel.getSearchEvent().observe(viewLifecycleOwner) { result ->
-            if (!upcomingEventViewModel.isFilterOpened()) return@observe
-
-            with(binding) {
-                when (result) {
-                    is Result.Loading -> {
-                        progressBar.visibility = View.VISIBLE
+    private fun setupSearch() {
+        binding.searchView.apply {
+            upcomingEventViewModel.apply {
+                setOnSearchClickListener {
+                    openFilter()
+                    adapter.submitList(emptyList())
+                }
+                setOnCloseListener {
+                    closeFilter()
+                    adapter.submitList(getUpcomingEventList().value)
+                    binding.showNoDataText(false)
+                    false
+                }
+                setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                    override fun onQueryTextSubmit(query: String): Boolean {
+                        searchEvent(query)
+                        return true
                     }
 
-                    is Result.Success -> {
-                        progressBar.visibility = View.GONE
-                        upcomingEventViewModel.hasShownToast = false
-                        if (result.data.isEmpty()) {
-                            textNoData(true, getString(R.string.txt_not_found))
-                        } else {
-                            textNoData(false)
-                            adapter.submitList(result.data)
-                        }
+                    override fun onQueryTextChange(newText: String): Boolean {
+                        return false
                     }
+                })
+            }
+        }
+    }
 
-                    is Result.Error -> {
-                        progressBar.visibility = View.GONE
-                        if (upcomingEventViewModel.hasShownToast.not()) {
-                            context.showErrorWithToast(
-                                lifecycleScope,
-                                onShow = { upcomingEventViewModel.hasShownToast = true },
-                                onHidden = { upcomingEventViewModel.hasShownToast = false }
-                            )
-                        }
-                        if (adapter.currentList.isEmpty()) {
-                            textNoData(true, getString(R.string.txt_no_internet))
-                        }
+    private fun setupObserver() {
+        upcomingEventViewModel.apply {
+            getSearchEventList().observe(viewLifecycleOwner) {
+                if (isFilterOpened()) {
+                    adapter.submitList(it)
+                }
+            }
+            getSearchEventState().observe(viewLifecycleOwner) {
+                if (isFilterOpened()) {
+                    handleResult(it, getString(R.string.txt_not_found)) { list ->
+                        setSearchEventList(list)
                     }
                 }
             }
-        }
 
-        upcomingEventViewModel.getUpcomingEventList().observe(viewLifecycleOwner) { result ->
-            if (upcomingEventViewModel.isFilterOpened()) return@observe
-
-            with(binding) {
-                when (result) {
-                    is Result.Loading -> {
-                        progressBar.visibility = View.VISIBLE
-                    }
-
-                    is Result.Success -> {
-                        progressBar.visibility = View.GONE
-                        upcomingEventViewModel.hasShownToast = false
-                        if (result.data.isEmpty()) {
-                            textNoData(true, getString(R.string.txt_no_upcoming_event))
-                        } else {
-                            textNoData(false)
-                            adapter.submitList(result.data)
-                        }
-                    }
-
-                    is Result.Error -> {
-                        progressBar.visibility = View.GONE
-                        if (upcomingEventViewModel.hasShownToast.not()) {
-                            context.showErrorWithToast(
-                                lifecycleScope,
-                                onShow = { upcomingEventViewModel.hasShownToast = true },
-                                onHidden = { upcomingEventViewModel.hasShownToast = false }
-                            )
-                        }
-                        if (adapter.currentList.isEmpty()) {
-                            textNoData(true, getString(R.string.txt_no_internet))
-                        }
+            getUpcomingEventList().observe(viewLifecycleOwner) {
+                if (isFilterOpened().not()) {
+                    adapter.submitList(it)
+                }
+            }
+            getUpcomingEventState().observe(viewLifecycleOwner) {
+                if (isFilterOpened().not()) {
+                    handleResult(it, getString(R.string.txt_no_upcoming_event)) { list ->
+                        setUpcomingEventList(list)
                     }
                 }
             }
         }
     }
 
-    private fun FragmentUpcomingEventBinding.textNoData(show: Boolean, message: String? = null) {
+    private fun UpcomingEventViewModel.handleResult(
+        result: Result<List<Event>>,
+        dataEmptyMessage: String,
+        onSuccess: (List<Event>) -> Unit
+    ) {
+        binding.apply {
+            when (result) {
+                is Result.Loading -> {
+                    progressBar.visibility = View.VISIBLE
+                }
+
+                is Result.Success -> {
+                    refreshLayout.isRefreshing = false
+                    progressBar.visibility = View.GONE
+                    hasShownToast = false
+                    if (result.data.isEmpty()) {
+                        showNoDataText(true, dataEmptyMessage)
+                    } else {
+                        showNoDataText(false)
+                        onSuccess(result.data)
+                        adapter.submitList(result.data)
+                    }
+                }
+
+                is Result.Error -> {
+                    refreshLayout.isRefreshing = false
+                    progressBar.visibility = View.GONE
+                    if (hasShownToast.not()) {
+                        context.showErrorWithToast(
+                            lifecycleScope,
+                            onShow = { hasShownToast = true },
+                            onHidden = { hasShownToast = false }
+                        )
+                    }
+                    if (adapter.currentList.isEmpty()) {
+                        showNoDataText(true, getString(R.string.txt_no_internet))
+                    }
+                }
+            }
+        }
+    }
+
+    private fun FragmentUpcomingEventBinding.showNoDataText(
+        show: Boolean,
+        message: String? = null
+    ) {
         if (show) {
             tvNoData.text = requireNotNull(message)
             rvUpcomingEvent.visibility = View.GONE
@@ -155,19 +169,20 @@ class UpcomingEventFragment : Fragment(), OnItemClickListener {
     }
 
     private fun loadData() {
-        if (!upcomingEventViewModel.isInitialized()) return
+        upcomingEventViewModel.apply {
+            if (isInitialized().not()) return
 
-        upcomingEventViewModel.fetchUpcomingEventList()
+            if (isFilterOpened()) {
+                fetchSearchEvent()
+            } else {
+                fetchUpcomingEventList()
+            }
+        }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
-    }
-
-    override fun onStart() {
-        super.onStart()
-        loadData()
     }
 
     override fun onItemClick(event: Event) {
