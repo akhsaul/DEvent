@@ -14,17 +14,21 @@ jobs:
       - android/accept_licenses
       - android/restore_build_cache:
           cache_prefix: devent-v1
+      - android/restore_gradle_cache:
+          cache_prefix: devent-v1
       - run:
           command: chmod +x ./gradlew
           name: Grant Execute Permissions
       - run:
-          command: ./gradlew assembleDebug
+          command: ./gradlew assembleDebug -DBASE_URL=$BASE_URL
           name: Build Debug APK
       - store_artifacts:
           name: Store Debug APK Artifact
           path: app/build/outputs/apk/debug/app-debug.apk
           destination: debug/debug-apk
       - android/save_build_cache:
+          cache_prefix: devent-v1
+      - android/save_gradle_cache:
           cache_prefix: devent-v1
 
 workflows:
