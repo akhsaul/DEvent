@@ -11,6 +11,19 @@ jobs:
       tag: default
     steps:
       - checkout
+      - accept_licenses
+      - android/restore_build_cache:
+          cache_prefix: devent-v1
+      - name: Grant Execute Permissions
+        run: chmod +x ./gradlew
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+      - name: Store Debug APK Artifact
+        store_artifacts:
+          path: app/build/outputs/apk/debug/app-debug.apk
+          destination: debug/debug-apk
+      - android/save_build_cache:
+          cache_prefix: devent-v1
 
 workflows:
   android-workflow:
