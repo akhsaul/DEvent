@@ -7,7 +7,7 @@ jobs:
   build:
     executor:
       name: android/android_machine
-      resource_class: small
+      resource_class: medium
     steps:
       - checkout
 
