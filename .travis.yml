@@ -1,4 +1,8 @@
-language: android
+os: linux
+
+language: java
+
+jdk: openjdk11
 
 dist: focal
 
