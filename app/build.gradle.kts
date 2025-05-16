@@ -13,8 +13,8 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        val localProperties = loadProperties(rootProject.file("local.properties").toString())
-        buildConfigField("String", "BASE_URL", "${localProperties["baseUrl"]}")
+        val BASE_URL = System.getProperty("BASE_URL")
+        buildConfigField("String", "BASE_URL", "$BASE_URL")
         applicationId = "org.akhsaul.dicodingevent"
         minSdk = 27
         targetSdk = 35
