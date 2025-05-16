@@ -1,0 +1,40 @@
+language: android
+
+dist: focal
+
+android:
+  components:
+    # Uncomment these if you need the latest SDK tools:
+    # - tools
+    # - platform-tools
+
+    # Build Tools for API 30
+    - build-tools;35.0.0
+
+    # Android SDK Platform for API 30
+    - platforms;android-35
+
+    # Android system image for API 30 with Google APIs (x86_64)
+    - system-images;android-35;google_apis;x86_64
+
+    # Required extras
+    - extras;android;m2repository         # Android Support Repository (v47.0.0)
+    - extras;google;m2repository          # Google Repository (v58)
+
+before_cache:
+  - rm -f $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
+    - $HOME/.android/build-cache
+
+# Before install steps
+before_install:
+  - chmod +x gradlew
+
+# Main build script
+script:
+  - ./gradlew build connectedCheck
