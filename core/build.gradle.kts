@@ -46,6 +46,8 @@ android {
 }
 
 dependencies {
+    implementation("net.zetetic:sqlcipher-android:4.9.0")
+
     // generate all injected code with Hilt
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.android)

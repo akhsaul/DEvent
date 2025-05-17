@@ -7,6 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import net.zetetic.database.sqlcipher.SupportOpenHelperFactory
 import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import org.akhsaul.core.BuildConfig
@@ -59,10 +60,14 @@ object CoreModule {
     @Provides
     fun provideEventDatabase(@ApplicationContext context: Context): EventDatabase {
         // TODO Menerapkan encryption pada database.
+        System.loadLibrary("sqlcipher")
+
+        val sqlHelper = SupportOpenHelperFactory(BuildConfig.LIBRARY_PACKAGE_NAME.toByteArray())
         return Room.databaseBuilder(
             context,
             EventDatabase::class.java,
             "dicoding_event.db"
-        ).build()
+        ).openHelperFactory(sqlHelper)
+            .build()
     }
 }
