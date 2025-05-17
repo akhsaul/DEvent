@@ -22,6 +22,7 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.akhsaul.core.toLocalDateTime
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -29,10 +30,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import kotlin.math.floor
 import kotlin.time.Duration.Companion.seconds
-
-fun String.toLocalDateTime(): LocalDateTime {
-    return LocalDateTime.parse(this, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-}
 
 fun Context?.showErrorWithToast(
     scope: LifecycleCoroutineScope,

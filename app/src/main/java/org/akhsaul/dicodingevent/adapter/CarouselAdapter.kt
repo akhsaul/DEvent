@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
-import org.akhsaul.dicodingevent.data.Event
+import org.akhsaul.core.domain.model.Event
 import org.akhsaul.dicodingevent.databinding.CarouselEventBinding
 import org.akhsaul.dicodingevent.util.DiffCallback
 import org.akhsaul.dicodingevent.util.OnItemClickListener

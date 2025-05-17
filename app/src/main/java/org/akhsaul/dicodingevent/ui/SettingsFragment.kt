@@ -21,10 +21,10 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import org.akhsaul.core.worker.DailyReminderWorker
 import org.akhsaul.dicodingevent.R
 import org.akhsaul.dicodingevent.setAppDarkMode
 import org.akhsaul.dicodingevent.util.SettingPreferences
-import org.akhsaul.dicodingevent.worker.DailyReminderWorker
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 

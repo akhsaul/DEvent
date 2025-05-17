@@ -11,16 +11,16 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import org.akhsaul.core.domain.model.Event
 import org.akhsaul.dicodingevent.R
 import org.akhsaul.dicodingevent.adapter.GridEventAdapter
 import org.akhsaul.dicodingevent.adjustStaggeredGridSpanCount
-import org.akhsaul.dicodingevent.data.Event
 import org.akhsaul.dicodingevent.databinding.FragmentFinishedEventBinding
 import org.akhsaul.dicodingevent.setupTopMenu
 import org.akhsaul.dicodingevent.showErrorWithToast
 import org.akhsaul.dicodingevent.ui.DetailFragment.Companion.KEY_EVENT_DATA
 import org.akhsaul.dicodingevent.util.OnItemClickListener
-import org.akhsaul.dicodingevent.util.Result
+import org.akhsaul.core.data.Result
 
 @AndroidEntryPoint
 class FinishedEventFragment : Fragment(), OnItemClickListener {

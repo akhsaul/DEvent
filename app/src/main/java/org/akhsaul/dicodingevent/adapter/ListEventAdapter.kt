@@ -6,9 +6,9 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import coil3.load
+import org.akhsaul.core.domain.model.Event
 import org.akhsaul.dicodingevent.R
 import org.akhsaul.dicodingevent.convertTime
-import org.akhsaul.dicodingevent.data.Event
 import org.akhsaul.dicodingevent.databinding.ItemEventBinding
 import org.akhsaul.dicodingevent.remainingTime
 import org.akhsaul.dicodingevent.util.DiffCallback

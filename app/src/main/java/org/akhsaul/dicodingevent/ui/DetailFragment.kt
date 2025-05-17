@@ -18,9 +18,9 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import coil3.load
 import dagger.hilt.android.AndroidEntryPoint
+import org.akhsaul.core.domain.model.Event
 import org.akhsaul.dicodingevent.R
 import org.akhsaul.dicodingevent.convertTime
-import org.akhsaul.dicodingevent.data.Event
 import org.akhsaul.dicodingevent.databinding.FragmentDetailBinding
 import java.text.SimpleDateFormat
 import java.time.ZonedDateTime

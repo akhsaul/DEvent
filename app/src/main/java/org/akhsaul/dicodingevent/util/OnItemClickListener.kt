@@ -1,6 +1,6 @@
 package org.akhsaul.dicodingevent.util
 
-import org.akhsaul.dicodingevent.data.Event
+import org.akhsaul.core.domain.model.Event
 
 interface OnItemClickListener {
     fun onItemClick(event: Event)

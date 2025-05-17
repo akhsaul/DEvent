@@ -5,8 +5,8 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import org.akhsaul.dicodingevent.data.Event
-import org.akhsaul.dicodingevent.repository.EventRepository
+import org.akhsaul.core.domain.model.Event
+import org.akhsaul.core.domain.repository.EventRepository
 import org.akhsaul.dicodingevent.util.SettingPreferences
 import javax.inject.Inject
 

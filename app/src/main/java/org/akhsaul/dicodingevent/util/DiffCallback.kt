@@ -1,7 +1,7 @@
 package org.akhsaul.dicodingevent.util
 
 import androidx.recyclerview.widget.DiffUtil
-import org.akhsaul.dicodingevent.data.Event
+import org.akhsaul.core.domain.model.Event
 
 object DiffCallback : DiffUtil.ItemCallback<Event>() {
     override fun areItemsTheSame(oldItem: Event, newItem: Event): Boolean {

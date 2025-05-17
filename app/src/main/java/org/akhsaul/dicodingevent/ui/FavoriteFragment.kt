@@ -9,14 +9,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import org.akhsaul.core.domain.model.Event
 import org.akhsaul.dicodingevent.R
 import org.akhsaul.dicodingevent.adapter.ListEventAdapter
-import org.akhsaul.dicodingevent.data.Event
 import org.akhsaul.dicodingevent.databinding.FragmentFavoriteBinding
 import org.akhsaul.dicodingevent.setupTopMenu
 import org.akhsaul.dicodingevent.showErrorWithToast
 import org.akhsaul.dicodingevent.util.OnItemClickListener
-import org.akhsaul.dicodingevent.util.Result
+import org.akhsaul.core.data.Result
 
 @AndroidEntryPoint
 class FavoriteFragment : Fragment(), OnItemClickListener {

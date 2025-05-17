@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.konan.properties.loadProperties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -13,8 +11,6 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        val BASE_URL = System.getProperty("BASE_URL")
-        buildConfigField("String", "BASE_URL", "$BASE_URL")
         applicationId = "org.akhsaul.dicodingevent"
         minSdk = 27
         targetSdk = 35
@@ -47,31 +43,31 @@ android {
 }
 
 dependencies {
-    debugImplementation(libs.leakcanary.android)
-    implementation(libs.androidx.startup.runtime)
+    implementation(project(":core"))
+    // TODO Menerapkan Leak Canary  dan tidak ada memory leaks saat dianalisa.
 
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.android)
     implementation(libs.androidx.work.runtime.ktx)
 
-    ksp(libs.androidx.hilt.compiler)
-    implementation(libs.androidx.hilt.common)
-    implementation(libs.androidx.hilt.work)
+    //ksp(libs.androidx.hilt.compiler)
+    //implementation(libs.androidx.hilt.common)
+    //implementation(libs.androidx.hilt.work)
 
     implementation(libs.androidx.preference.ktx)
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
+    //implementation(libs.androidx.room.runtime)
+    //ksp(libs.androidx.room.compiler)
+    //implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.material3)
-    implementation(libs.coil.svg)
+    //implementation(libs.coil.svg)
     implementation(libs.androidx.swiperefreshlayout)
-    implementation(libs.converter.gson)
+    //implementation(libs.converter.gson)
     implementation(libs.coil)
     implementation(libs.coil.network.okhttp)
     implementation(libs.androidx.activity.ktx)
-    implementation(libs.retrofit)
-    implementation(libs.gson)
+    //implementation(libs.retrofit)
+    //implementation(libs.gson)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.lifecycle.livedata.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
