@@ -7,6 +7,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
 import org.akhsaul.core.BuildConfig
 import org.akhsaul.core.data.source.local.room.EventDao
@@ -25,9 +26,15 @@ object CoreModule {
     @Provides
     fun provideOkHttpClient(): OkHttpClient {
         // TODO Menerapkan certificate pinning untuk koneksi ke server.
+        val certificatePinner = CertificatePinner.Builder()
+            .add(BuildConfig.HOST_NAME, "sha256/DzuzCR2LACQP3q7NiiYGGd1TFf+Eg6Ql1BwDv/OCHH0=")
+            .add(BuildConfig.HOST_NAME, "sha256/K7rZOrXHknnsEhUH8nLL4MZkejquUuIvOIr6tCa0rbo=")
+            .add(BuildConfig.HOST_NAME, "sha256/C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=")
+            .build()
         return OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)
             .readTimeout(120, TimeUnit.SECONDS)
+            .certificatePinner(certificatePinner)
             .build()
     }
 
