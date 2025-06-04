@@ -45,6 +45,8 @@ android {
 dependencies {
     implementation(project(":core"))
     // TODO Menerapkan Leak Canary  dan tidak ada memory leaks saat dianalisa.
+    //debugImplementation(libs.leakcanary.android)
+    //implementation(libs.androidx.startup.runtime)
 
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.android)
@@ -77,7 +79,15 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.androidx.activity)
+    //unitTest
+    testImplementation(kotlin("test"))
+    testImplementation("app.cash.turbine:turbine:1.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     testImplementation(libs.junit)
+
+    //androidTest
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.6.1")
+    androidTestImplementation("androidx.test.espresso:espresso-device:1.0.1")
 }

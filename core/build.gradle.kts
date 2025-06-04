@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.konan.properties.loadProperties
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -7,6 +5,7 @@ plugins {
     // required for generate injected code
     alias(libs.plugins.hilt.android)
     id("kotlin-parcelize")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -14,9 +13,6 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        val localProperties = loadProperties(rootProject.file("local.properties").toString())
-        buildConfigField("String", "BASE_URL", "${localProperties["baseUrl"]}")
-        buildConfigField("String", "HOST_NAME", "${localProperties["hostName"]}")
         minSdk = 27
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -80,6 +76,10 @@ dependencies {
     //implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     //implementation(libs.material)
+    //unitTest
+    testImplementation(kotlin("test"))
+    testImplementation("app.cash.turbine:turbine:1.2.0")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.10.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

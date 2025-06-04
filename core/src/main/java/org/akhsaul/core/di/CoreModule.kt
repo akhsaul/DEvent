@@ -28,9 +28,9 @@ object CoreModule {
     fun provideOkHttpClient(): OkHttpClient {
         // TODO Menerapkan certificate pinning untuk koneksi ke server.
         val certificatePinner = CertificatePinner.Builder()
-            .add(BuildConfig.HOST_NAME, "sha256/DzuzCR2LACQP3q7NiiYGGd1TFf+Eg6Ql1BwDv/OCHH0=")
-            .add(BuildConfig.HOST_NAME, "sha256/K7rZOrXHknnsEhUH8nLL4MZkejquUuIvOIr6tCa0rbo=")
-            .add(BuildConfig.HOST_NAME, "sha256/C5+lpZ7tcVwmwQIMcRtPbsQtWLABXhQzejna0wHFr8M=")
+            .add(BuildConfig.HOST_NAME, BuildConfig.CERT_PIN1)
+            .add(BuildConfig.HOST_NAME, BuildConfig.CERT_PIN2)
+            .add(BuildConfig.HOST_NAME, BuildConfig.CERT_PIN3)
             .build()
         return OkHttpClient.Builder()
             .connectTimeout(120, TimeUnit.SECONDS)
